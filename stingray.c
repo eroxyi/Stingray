@@ -3,14 +3,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define PIXELS 784
-
-// A group of stingrays are called fevers :) (this is essentially just the
-// layer)
-#define FEVER 4
-#define FEVER_SIZE 100
-#define OUTPUT_NODES 10
-
 Stingray *stingray_build(const int *pup_sizes, int n) {
   srand(time(NULL));
 
@@ -46,33 +38,40 @@ Stingray *stingray_build(const int *pup_sizes, int n) {
 }
 
 void free_stingray(Stingray *s) {
+  for (int i = 0; i < s->n_pups; i++) {
+    free(s->pups[i].w);
+    free(s->pups[i].b);
+    free(s->pups[i].pre_act);
+    free(s->pups[i].post_act);
+    free(s->pups[i].error);
+  }
+
   free(s->pups);
   free(s);
 }
 
 void pup_forward(Pup *p, const float *in) {
-  if (p == NULL) {
-    return;
+  for (int i = 0; i < p->n_out; i++) {
+    // loop through the weights
+    p->pre_act[i] = 0;
+    for (int j = 0; j < p->n_in; j++) {
+      p->pre_act[i] += ((p->w[i * p->n_in + j] * in[j]));
+    }
+    p->pre_act[i] += p->b[i];
+    (p->post_act[i]) = (1.0 / (1 + expf(-p->pre_act[i])));
   }
-  int n = sizeof(*in) / sizeof(float);
-
-  // multiply weights and assign to the preact
-  for (int i = 0; i < n; i++) {
-    // z = Wx + b
-    *(p->pre_act + i) = *(in) * *(p->w) + *(p->b);
-  }
-
-  // activation functions
-  for (int i = 0; i < n; i++) {
-    *(p->post_act + i) = 1 / (1 + expf(*(p->pre_act + i)));
-  }
-
-  p++;
-  pup_forward(p, p->post_act);
 }
 
 float *stingray_forward(Stingray *s, const float *in) {
-  pup_forward((s->pups), in);
+  pup_forward(s->pups, in);
+
+  for (int i = 1; i < s->n_pups; i++) {
+    pup_forward((s->pups + i), (s->pups + i - 1)->post_act);
+  }
+
+  Pup *target = &(s->pups[s->n_pups - 1]);
+
+  return target->post_act;
 }
 
 // backpropagation
