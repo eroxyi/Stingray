@@ -26,9 +26,9 @@ void pup_forward(Pup *p, const float *in);
 float *stingray_forward(Stingray *s, const float *in);
 
 // backward prop
-void compute_error(Stingray *s, const float *target);
+void compute_error(Stingray *s, const float *target, float rate);
 
-void pup_backward(Pup *p, Pup *prev, const float *input_to_l);
+void pup_backward(Pup *p, Pup *prev, const float *input_to_l, float rate);
 
 void back_prop(Stingray *s, const float *input, const float *target,
                float rate);

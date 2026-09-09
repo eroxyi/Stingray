@@ -75,17 +75,25 @@ float *stingray_forward(Stingray *s, const float *in) {
 }
 
 // backpropagation
-void compute_error(Stingray *s, const float *target) {
+void compute_error(Stingray *s, const float *target, float rate) {
   Pup *out = &s->pups[s->n_pups - 1];
-  int size = out->n_out;
+  Pup *prev = &s->pups[s->n_pups - 2];
 
+  int size = out->n_out;
   for (int i = 0; i < size; i++) {
+
     out->error[i] = (out->post_act[i] - target[i]) * out->post_act[i] *
                     (1 - out->post_act[i]);
+
+    for (int j = 0; j < out->n_in; j++) {
+      out->w[i * out->n_in + j] -= rate * out->error[i] * prev->post_act[j];
+    }
+
+    out->b[i] -= rate * out->error[i];
   }
 }
 
-void pup_backward(Pup *p, Pup *next, const float *input) {
+void pup_backward(Pup *p, Pup *next, const float *input, float rate) {
   float dL_da;
   for (int i = 0; i < p->n_out; i++) {
     dL_da = 0;
@@ -94,18 +102,26 @@ void pup_backward(Pup *p, Pup *next, const float *input) {
       dL_da += next->error[j] * next->w[j * (p->n_out) + i];
     }
     p->error[i] = dL_da * (p->post_act[i]) * (1 - (p->post_act[i]));
+    // updating weights
+    for (int j = 0; j < p->n_in; j++) {
+      p->w[i * p->n_in + j] -= rate * p->error[i] * input[j];
+    }
+    p->b[i] -= rate * p->error[i];
   }
 }
 
 void back_prop(Stingray *s, const float *input, const float *target,
                float rate) {
   stingray_forward(s, input);
-  compute_error(s, target);
+  compute_error(s, target, rate);
 
   for (int i = s->n_pups - 2; i >= 0; i--) {
     const float *input_to_l = (i == 0) ? input : s->pups[i - 1].post_act;
-    pup_backward(&s->pups[i], &s->pups[i + 1], input_to_l);
+    pup_backward(&s->pups[i], &s->pups[i + 1], input_to_l, rate);
   }
 }
 
 // saving the actual file
+void save(const Stingray *s, const char *path) {}
+
+Stingray load(const char *path) {}
