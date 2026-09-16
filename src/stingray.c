@@ -1,4 +1,4 @@
-#include "stingray.h"
+#include "include/stingray.h"
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
