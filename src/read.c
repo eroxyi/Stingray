@@ -1,3 +1,4 @@
+#include "./include/dataset.h"
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,18 +8,12 @@
 #define PIXELS 784
 #define MAX_FILES 10
 
-typedef struct Dataset {
-  unsigned char **images;
-  int *label;
-  int n;
-} Dataset;
-
 Dataset *parse(const char *dir) {
   Dataset *temp = (malloc(sizeof(Dataset)));
 
   temp->images = (malloc(NUM_IMAGE * sizeof(char *) * MAX_FILES));
   temp->label = (malloc(sizeof(int) * NUM_IMAGE * MAX_FILES));
-  temp->n = NUM_IMAGE;
+  temp->n = NUM_IMAGE * NUM_IMAGE;
 
   DIR *dirFile = opendir(dir);
   struct dirent *hFile;
@@ -63,9 +58,4 @@ void visualize(Dataset *s) {
     }
     printf("\n");
   }
-}
-
-int main() {
-  Dataset *set = parse("../data/");
-  visualize(set);
 }

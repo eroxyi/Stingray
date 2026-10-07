@@ -1,3 +1,6 @@
+#ifndef STINGRAY_H
+#define STINGRAY_H
+
 typedef struct {
   // how many neurons each MLP reads and outputs to
   int n_in;
@@ -37,3 +40,5 @@ void back_prop(Stingray *s, const float *input, const float *target,
 void save(const Stingray *s, const char *path);
 
 Stingray load(const char *path);
+
+#endif
